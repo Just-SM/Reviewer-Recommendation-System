@@ -1,2 +1,2 @@
-# Reviewer-Recommendation-System
-Thesis project 
+# Reviewer-Recommendation-System 📃
+> A content based recomendation engine for scientific papers reviews.
