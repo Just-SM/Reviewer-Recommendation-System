@@ -128,6 +128,8 @@ else:
     bt = st.button("Start")
     if bt:
 
+        
+
         paper = temp_doc_data
 
         list_of_candidates = [temp_data_reviewers]
