@@ -2,6 +2,8 @@ import streamlit as st
 import utils.data_loader
 import textwrap
 
+## FIX SOMETHING 
+
 st.set_page_config(layout='wide',
     page_title="RRS Home page",
     page_icon="🎈",)
