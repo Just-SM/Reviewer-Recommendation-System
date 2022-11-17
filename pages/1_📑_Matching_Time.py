@@ -1,5 +1,5 @@
 import streamlit as st
-import utils.data_loader
+import utils.utils
 import textwrap
 
 ## FIX SOMETHING 
@@ -13,7 +13,7 @@ if 'mt_main_empty' not in st.session_state:
     st.session_state['mt_main_empty'] = st.empty()  
 
 if "mt_data_holder" not in st.session_state:
-    st.session_state['mt_data_holder'] = utils.data_loader.DataHolder() 
+    st.session_state['mt_data_holder'] = utils.utils.DataHolder() 
 
 
 
