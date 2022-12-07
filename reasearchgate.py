@@ -4,7 +4,7 @@ from urllib.parse import quote
 import psycopg2
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-
+import yake
 password = os.environ['Password']
 user = os.environ['usernameDatabase']
 connection_string = "dbname=orcid user={u} password={p} host=10.3.1.14".format(u=user, p=password)
@@ -26,7 +26,7 @@ def unique_list(x):
 def get_reasearch_gate_links(orcid):
     list_name = _records(orcid)
     list_name2 = unique_list([i[0] for i in list_name])
-    top_5 = []
+    top_5 =[]
     for i in list_name2[:5]:
         top_5.append(('https://www.researchgate.net/search/publication?q=' + quote('"' + i + '"'), i))
 
@@ -49,7 +49,8 @@ def get_abstract(top5):
             abstract = driver.find_element(By.XPATH, "//div[contains(@class,'abstract')]")
             list.append(abstract.text)
         except Exception as e:
-            print('some error fetching abstract' + str(e))
+            # print('some error fetching abstract' + str(e))
+            list.append(" ")
     driver.close()
     return list
 
@@ -59,10 +60,13 @@ def get_abstract(top5):
 # krystian 0000-0002-7851-4330
 # marcin 0000-0001-7387-9210
 #jerzy swiatek 0000-0002-4986-8092
+#dariusz krol 0000-0002-2715-6000
 
 
-links = get_reasearch_gate_links('0000-0002-4986-8092')
-print(*links, sep='\n')
-print(*get_abstract(links), sep='\n')
+links = get_reasearch_gate_links('0000-0002-2715-6000')
+abstract = ''.join(get_abstract(links))
+key = yake.KeywordExtractor()
+list_of_Key=[x[0] for x in key.extract_keywords(abstract)]
+print(list_of_Key)
 
-# print()
+
