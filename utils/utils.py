@@ -1,5 +1,4 @@
 import pandas as pd
-from io import BytesIO
 import psycopg2
 import yake
 from dataclasses import dataclass
@@ -138,7 +137,9 @@ class Modelprovider:
 
     def __init__(self) -> None:
 
-        self.kw_extractor = yake.KeywordExtractor(top=5)
+        self.kw_extractor = yake.KeywordExtractor(top=5,n=1)
+
+        self.kwords = dict()
 
 
     def extract_kw(self,text):
@@ -167,11 +168,11 @@ class Modelprovider:
         
         return sum_vec1
 
-    def get_weight_sum_vec(self,data):
+    def get_weight_sum_vec(self,data,norm=0):
         sum_vec1 = np.zeros([300])
         for ind,vec in enumerate(data):
             if vec is not None:
-                sum_vec1 = sum_vec1 + (vec * (1 - 0.01 * ind))
+                sum_vec1 = sum_vec1 + (vec * (1 - (norm * ind)))
         return sum_vec1
 
     def get_vec_rpr(self,data):
@@ -183,7 +184,7 @@ class Modelprovider:
 
         vec_abstract = self.get_vectors(kw_from_abstract)
 
-        sum_vec_abstract = self.get_weight_sum_vec(vec_abstract)
+        sum_vec_abstract = self.get_weight_sum_vec(vec_abstract,norm=0)
 
         vec_keys = self.get_vectors(kw_from_keys)
 
@@ -202,25 +203,28 @@ class Modelprovider:
              self.papers_vectors.append(self.get_vec_rpr([row['title'],row['keywords'],row['abstract']])[2])
 
 
-    def prep_persons(self,persons):
+    def prep_persons(self,persons,norm_fact = 0):
         self.persons_data = []
         for person in persons:
             kw = person.calc_kw + person.given_kw
             vec_keys = self.get_vectors(kw)
-            sum_vec_keys = self.get_sum_vec(vec_keys)
+            sum_vec_keys = self.get_weight_sum_vec(vec_keys,norm_fact)
             self.persons_data.append((person,sum_vec_keys))
 
 
-    def find_matches_for_paper(self,paper):
-        paper_vec = self.get_vec_rpr([paper['title'],paper['keywords'],paper['abstract']])[2]
+    def find_matches_for_paper(self,paper,top_n = 4):
+        if isinstance(paper,dict):
+            paper_vec = self.get_vec_rpr([paper['title'],paper['keywords'],paper['abstract']])[2]
+        else:
+            paper_vec = self.get_vec_rpr([paper[0],paper[1],paper[2]])[2]
         res = []
         for person,vec in self.persons_data:
             res.append((person,cosine(paper_vec,vec)))
         res.sort(key=lambda x : x[1],reverse=True)
-        return res[:5]
+        return res[:top_n]
 
 
-    def find_matches_for_person(self,person:PersonData):
+    def find_matches_for_person(self,person:PersonData,top_n = 4):
         kw = person.calc_kw + person.given_kw
         # print(kw)
         vec_keys = self.get_vectors(kw)
@@ -235,80 +239,8 @@ class Modelprovider:
 
         df = pd.DataFrame.from_dict(res)
         df.sort_values(['Similarity'],inplace=True,ascending=False)
-        return df.head(4)
+        return df.head(top_n)
         
-# class DataHolder:
-
-#     def __init__(self) -> None:
-
-#         self.committee_df = None
-#         self.authors_df = None
-#         self.submissions_df = None
-
-#         # Key words extractor
-#         self.kw_extractor = yake.KeywordExtractor(top=5)
-        
-#         # Connect to an existing database
-#         connection = psycopg2.connect(user="confeval",
-#                                     password="C0nfeval2022#",
-#                                     host="10.3.1.14",
-#                                     port="5432",
-#                                     database="orcid")
-
-#         # Create a cursor to perform database operations
-#         self.cursor = connection.cursor()
-#         # Print PostgreSQL details
-#         print("PostgreSQL server information")
-#         print(connection.get_dsn_parameters(), "\n")
-#         # Executing a SQL query
-#         self.cursor.execute("SELECT version();")
-#         # Fetch result
-#         record = self.cursor.fetchone()
-#         print("You are connected to - ", record, "\n")
-
-
-#     def run_command(self,command:str):
-#         self.cursor.execute(command)
-#         res = self.cursor.fetchall()
-#         if len(res) > 0:
-#             return res
-#         else:
-#             return None
-
-
-    
-#     def _calc_Found_kwords(self,titles):
-#         if titles is None:
-#             return None
-#         # print("get_user_data_by_orcid:   Calc kwords")
-#         res = []
-#         for title in titles:
-#             res.extend([x[0] for x in self.kw_extractor.extract_keywords(title)])
-#         if len(res) > 0 :
-#             return res
-#         else:
-#             return None
-
-#     def load_committee(self,data):
-#         self.committee_df = pd.read_csv(BytesIO(data),index_col='#')
-
-#     def load_authors(self,data):
-#         self.authors_df = pd.read_csv(BytesIO(data))
-
-#     def load_submissions(self,data):
-#         self.submissions_df = pd.read_csv(BytesIO(data))
-
-
-#     def get_user_data_by_orcid(self,orcid_id:str):
-#         name = self._get_Name(orcid_id)
-#         given_kwords = self._get_Kwords(orcid_id) 
-#         aff = self._get_Aff(orcid_id)
-#         found_kwords = self._calc_Found_kwords(self._get_Titles(orcid_id))
-        
-
-#         return PersonData(name,orcid_id,given_kwords,found_kwords,aff)
-
-
 class Result():
     def __init__(self):
         self.val = {1:None,2:None,3:None,4:None}
@@ -333,19 +265,8 @@ if __name__ == "__main__":
         # multiple_results = [pool.apply_async(_get_Name,args=(args.orcid,))]
         multiple_results = [pool.apply_async(_get_Name,args=(args.orcid,),callback=result.update_result),pool.apply_async(_get_Kwords,(args.orcid,),callback=result.update_result),pool.apply_async(_get_Titles,(args.orcid,),callback=result.update_result),pool.apply_async(_get_Aff,(args.orcid,),callback=result.update_result)]
         try:
-            results = [res.get(timeout=20) for res in multiple_results]
+            results = [res.get(timeout=40) for res in multiple_results]
             # print(results)
             print(result.get_formated())
         except:
             print(result.get_formated())
-
-    # with Pool(4) as pool:
-    #     result = Result()
-    #     # multiple_results = [pool.apply_async(_get_Name,args=(args.orcid,))]
-    #     multiple_results = [pool.apply_async(_get_Name,args=(args.orcid,),callback=result.update_result),pool.apply_async(_get_Kwords,(args.orcid,),callback=result.update_result),pool.apply_async(_get_Titles,(args.orcid,),callback=result.update_result),pool.apply_async(_get_Aff,(args.orcid,),callback=result.update_result)]
-    #     try:
-    #         results = [res.get() for res in multiple_results]
-    #         # print(results)
-    #         print(result.get_formated())
-    #     except:
-    #         print(result.get_formated())
