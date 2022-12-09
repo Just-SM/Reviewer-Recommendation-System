@@ -10,6 +10,8 @@ import textwrap
 if 'sidebar_state' not in st.session_state:
     st.session_state['sidebar_state'] = 'expanded'
 
+
+
 st.set_page_config(
     page_title="Add Reviewers",
     page_icon="🎩",
@@ -52,7 +54,7 @@ if 'save_max_papers_per_person' not in st.session_state:
 # DEF FUNCTIONS
 
 def move_next_page():
-    st.session_state['work_flow_stage'] += 1
+    st.session_state['work_flow_stage'] =  st.session_state['work_flow_stage'] + 1
 
 
 def evaluate_candidates(norm_factor = 0):
@@ -78,12 +80,16 @@ def next_person_skip():
 #     st.session_state['ar_all_loaded'] = False
 #     st.session_state['ar_assigning_load'] = True
 
-def file_uploaded():
+def file_uploaded(pipe):
 
     df_rev = st.session_state['ar_reviewers_file'].getvalue().decode("utf-8")
 
     st.session_state['ar_orcid_ids'] = [x.strip() for x in df_rev.split("\n")]
-
+    st.write('2')
+    st.session_state['work_flow_stage']
+    move_next_page()
+    st.write('3')
+    st.session_state['work_flow_stage']
 
 def update_submission_file():
     st.session_state['ar_submission_pd'] = pd.read_csv(
@@ -223,12 +229,12 @@ def auto_complete_stupid():
 
 # RUNNERS CODE
 
-def source1_get_reviewers():
+def source1_get_reviewers(pipe):
+
     st.markdown("# Load file with Reviewers")
-
     st.file_uploader("Reviewers File ", ['.txt'], key='ar_reviewers_file', on_change=file_uploaded)
+    st.write(st.session_state)
 
-    move_next_page()
 
 
 def source2_get_data_from_database():
@@ -403,13 +409,25 @@ def sink():
             st.balloons()
 
 
+class DataPipe:
+
+    def __init__(self) -> None:
+        pass
+
+
 if __name__ == '__main__':
 
+    if 'data_pipe' not in st.session_state:
+        st.session_state['data_pipe'] = DataPipe()
+
+    st.write(st.session_state)
     # WORK FLOW 
 
     if st.session_state['work_flow_stage'] == 0:
 
-        source1_get_reviewers()
+        st.session_state['data_pipe'] = source1_get_reviewers (st.session_state['data_pipe'])
+
+        # st.session_state['work_flow_stage'] = 1        
 
     if st.session_state['work_flow_stage'] == 1:
 
