@@ -28,7 +28,7 @@ if 'ar_orcid_ids' not in st.session_state:
 
 
 # CREATE STATE VARS
-if "ar_page_mode" not in st.session_state:
+if "work_flow_stage" not in st.session_state:
     st.session_state['work_flow_stage'] = 0
 if 'mp' not in st.session_state:
     st.session_state['mp'] = utl.Modelprovider()
@@ -56,7 +56,6 @@ if 'save_max_papers_per_person' not in st.session_state:
 def move_next_page():
     st.session_state['work_flow_stage'] =  st.session_state['work_flow_stage'] + 1
 
-
 def evaluate_candidates(norm_factor = 0):
     st.session_state['mp'].prep_papers(st.session_state['ar_submission_pd'])
     st.session_state['mp'].prep_persons(st.session_state['ar_persons'],norm_factor)
@@ -73,6 +72,7 @@ def update_max_persons():
     st.session_state['max_papers_per_person'] = (st.session_state['min_persons_per_doc'] * len(st.session_state['ar_submission_pd'])) // len(st.session_state['ar_persons']) +1
 
 def next_person_skip():
+    st.write(st.session_state)
     while st.session_state[f"{st.session_state['ar_number_of_person']}-name"].strip() != "" and st.session_state[f"{st.session_state['ar_number_of_person']}-orcid"].strip() != "" and st.session_state[f"{st.session_state['ar_number_of_person']}-affiliation"].strip() != "" and (st.session_state[f"{st.session_state['ar_number_of_person']}-given_kwords"].strip() != "" or st.session_state[f"{st.session_state['ar_number_of_person']}-found_kwords"].strip() != "") and st.session_state['ar_number_of_person']+1 < len(st.session_state['ar_persons']):
         next_person()
 
@@ -80,16 +80,13 @@ def next_person_skip():
 #     st.session_state['ar_all_loaded'] = False
 #     st.session_state['ar_assigning_load'] = True
 
-def file_uploaded(pipe):
+def file_uploaded():
 
     df_rev = st.session_state['ar_reviewers_file'].getvalue().decode("utf-8")
-
     st.session_state['ar_orcid_ids'] = [x.strip() for x in df_rev.split("\n")]
-    st.write('2')
-    st.session_state['work_flow_stage']
     move_next_page()
-    st.write('3')
-    st.session_state['work_flow_stage']
+
+
 
 def update_submission_file():
     st.session_state['ar_submission_pd'] = pd.read_csv(
@@ -229,12 +226,11 @@ def auto_complete_stupid():
 
 # RUNNERS CODE
 
-def source1_get_reviewers(pipe):
+def source1_get_reviewers():
 
     st.markdown("# Load file with Reviewers")
     st.file_uploader("Reviewers File ", ['.txt'], key='ar_reviewers_file', on_change=file_uploaded)
-    st.write(st.session_state)
-
+    
 
 
 def source2_get_data_from_database():
@@ -296,6 +292,7 @@ def filter1_verify_persons_data():
             st.text_area("🔑 Given Keywords", value=", ".join(curr_person.given_kw),
                             key=f"{curr_index}-given_kwords", placeholder='Optional with found keywords', height=100)
     with col2:
+        st.write(st.session_state)
         place = st.empty()
         st.text_area("🔍 Found Keywords", value=", ".join(
             curr_person.calc_kw), key=f"{curr_index}-found_kwords", height=500)
@@ -409,25 +406,15 @@ def sink():
             st.balloons()
 
 
-class DataPipe:
-
-    def __init__(self) -> None:
-        pass
-
 
 if __name__ == '__main__':
 
-    if 'data_pipe' not in st.session_state:
-        st.session_state['data_pipe'] = DataPipe()
-
-    st.write(st.session_state)
     # WORK FLOW 
 
     if st.session_state['work_flow_stage'] == 0:
 
-        st.session_state['data_pipe'] = source1_get_reviewers (st.session_state['data_pipe'])
+        st.session_state['data_pipe'] = source1_get_reviewers ()
 
-        # st.session_state['work_flow_stage'] = 1        
 
     if st.session_state['work_flow_stage'] == 1:
 
