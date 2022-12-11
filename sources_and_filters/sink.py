@@ -137,7 +137,6 @@ def sink():
     if 'ar_number_of_paper' not in st.session_state:
         st.session_state['ar_number_of_paper'] = 0
 
-    st.write(st.session_state)
     st.markdown(" Paper: "+str(st.session_state['ar_number_of_paper']))
 
     st.progress(((100/len(st.session_state['result'])) * st.session_state['ar_number_of_paper'])/100)

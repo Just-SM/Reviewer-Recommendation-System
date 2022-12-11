@@ -2,7 +2,7 @@ import streamlit as st
 
 import pandas as pd
 
-from .common_utils import move_next_page
+from ..common_utils import move_next_page
 
 def update_submission_file():
     st.session_state['ar_submission_pd'] = pd.read_csv(

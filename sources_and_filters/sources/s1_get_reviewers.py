@@ -1,5 +1,5 @@
 import streamlit as st 
-from .common_utils import move_next_page
+from ..common_utils import move_next_page
 
 
 if 'work_flow_stage' not in st.session_state:

@@ -1,10 +1,10 @@
 import streamlit as st 
-from .common_utils import move_next_page
+from ..common_utils import move_next_page
 
 from subprocess import Popen, PIPE
 import sys
 import json
-import utils.utils as utl
+from ..person import PersonData 
 
 
 def source2_get_data_from_database():
@@ -34,7 +34,7 @@ def source2_get_data_from_database():
                         st.session_state['mp'].kwords[kw] += 1
                     else:
                         st.session_state['mp'].kwords[kw] = 1
-            st.session_state['ar_persons'].append(utl.PersonData(
+            st.session_state['ar_persons'].append(PersonData(
                 data_person_raw['1'], data_person_raw['0'], data_person_raw['3'], kwords_form_title, data_person_raw['2']))
 
     move_next_page()
