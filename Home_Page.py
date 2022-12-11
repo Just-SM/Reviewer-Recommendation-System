@@ -15,7 +15,7 @@ st.markdown("Visit our page on the  🌌[Git HUB](https://github.com/Rishi4702/R
 st.markdown("Some other useful links :")
 
 st.markdown("""
-- link 
+- Visit our wiki [page](https://github.com/Rishi4702/Reviewer-Recommendation-System/wiki) 
 - link
 - link
 """)
