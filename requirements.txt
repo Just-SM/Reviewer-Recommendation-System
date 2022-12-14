@@ -1,0 +1,6 @@
+gensim==4.2.0
+numpy==1.23.3
+pandas==1.5.0
+psycopg2==2.9.5
+streamlit==1.15.1
+yake==0.4.8

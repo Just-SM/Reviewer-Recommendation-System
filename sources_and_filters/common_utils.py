@@ -83,7 +83,7 @@ class ModelProvider:
         return sum_vec_abstract,sum_vec_keys,sum_vec_abstract+sum_vec_keys
 
     def load_vectorizer(self):
-        self.vect = gensim.models.KeyedVectors.load_word2vec_format(r"C:\Users\romaf\gensim-data\wiki-2017-gensim\model.bin", binary=True)
+        self.vect = gensim.models.KeyedVectors.load_word2vec_format("model/model.bin", binary=True)
 
     def prep_papers(self,papers):
         self.papers_data = []
