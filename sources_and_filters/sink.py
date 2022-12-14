@@ -168,10 +168,11 @@ def sink():
                 {"Id": assign[0], "Title": assign[1], "Orcid": assign[5][0].orcid, "Name": assign[5][0].name_surname})
         df = pd.DataFrame.from_dict(out_list)
         out_enc = df.to_csv().encode("utf-8")
-        if st.download_button(
+        st.balloons()
+        st.download_button(
             label="Download assignation file",
             data=out_enc,
             file_name='assignment.csv',
             mime='text/csv',
-        ):
-            st.balloons()
+        )
+            

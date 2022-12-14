@@ -16,6 +16,5 @@ st.markdown("Some other useful links :")
 
 st.markdown("""
 - Visit our wiki [page](https://github.com/Rishi4702/Reviewer-Recommendation-System/wiki) 
-- link
-- link
+- Documentation [doc](https://docs.google.com/document/d/13I1D6BFaQ0fSlXv5ZPoytgHr_22uG30b/edit?usp=sharing&ouid=107512141278454215409&rtpof=true&sd=true)
 """)
